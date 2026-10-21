@@ -1,0 +1,1375 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cartilla Comercial y Motor de Tasas A4 - CREDIBAN PERÚ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @page {
+            size: A4 landscape;
+            margin: 3.5mm 4.5mm;
+        }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: #cbd5e1;
+            color: #0f172a;
+        }
+
+        /* Contenedor exacto de Hoja A4 Horizontal que estira las filas para ocupar toda la hoja */
+        .a4-sheet {
+            width: 288mm;
+            height: 202mm;
+            margin: 0 auto 20px auto;
+            background: white;
+            padding: 3.5mm 4.5mm;
+            box-shadow: 0 12px 28px rgba(0,0,0,0.18);
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-sizing: border-box;
+        }
+
+        .tabla-contenedor {
+            flex: 1 1 auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: stretch;
+            overflow: hidden;
+        }
+
+        table.tabla-cartilla {
+            width: 100%;
+            height: 100%;
+            border-collapse: collapse;
+            table-layout: auto;
+        }
+
+        table.tabla-cartilla th,
+        table.tabla-cartilla td {
+            border: 1px solid #64748b;
+            white-space: nowrap;
+            padding-left: 4px;
+            padding-right: 4px;
+        }
+
+        /* Escalas de Tamaño de Fuente y Altura de Fila Configurables */
+        /* 1. ESCALA EXTRA GRANDE (Ideal para 1 bloque por hoja: Catorcenal y Semanal) */
+        .escala-xl th {
+            padding-top: 3px;
+            padding-bottom: 3px;
+            font-size: 12px;
+            line-height: 1.1;
+        }
+        .escala-xl td {
+            padding-top: 2.5px;
+            padding-bottom: 2.5px;
+            font-size: 15px;
+            line-height: 1.15;
+        }
+        .escala-xl .tramo-banner td {
+            padding-top: 2px !important;
+            padding-bottom: 2px !important;
+            font-size: 11px !important;
+        }
+
+        /* 2. ESCALA GRANDE (Ideal para Diario con 5 plazos + Totales) */
+        .escala-lg th {
+            padding-top: 2.5px;
+            padding-bottom: 2.5px;
+            font-size: 11px;
+            line-height: 1.1;
+        }
+        .escala-lg td {
+            padding-top: 2.2px;
+            padding-bottom: 2.2px;
+            font-size: 13.5px;
+            line-height: 1.12;
+        }
+        .escala-lg .tramo-banner td {
+            padding-top: 2px !important;
+            padding-bottom: 2px !important;
+            font-size: 10.5px !important;
+        }
+
+        /* 3. ESCALA COMPACTA (Para vista combinada o comparativa de 15 columnas) */
+        .escala-md th {
+            padding-top: 2px;
+            padding-bottom: 2px;
+            font-size: 10px;
+            line-height: 1.08;
+        }
+        .escala-md td {
+            padding-top: 1.8px;
+            padding-bottom: 1.8px;
+            font-size: 12px;
+            line-height: 1.1;
+        }
+        .escala-md .tramo-banner td {
+            padding-top: 1.5px !important;
+            padding-bottom: 1.5px !important;
+            font-size: 9.5px !important;
+        }
+
+        /* Columnas Guía de Monto (Angostas y de Alto Contraste) */
+        .col-monto-izq {
+            text-align: left !important;
+            font-weight: 900;
+            background-color: #0f172a !important;
+            color: #ffffff !important;
+            border-right: 2.5px solid #000000 !important;
+            padding-left: 6px !important;
+            padding-right: 5px !important;
+            width: 78px;
+        }
+        .col-monto-der {
+            text-align: right !important;
+            font-weight: 900;
+            background-color: #0f172a !important;
+            color: #f8fafc !important;
+            border-left: 2.5px solid #000000 !important;
+            padding-left: 5px !important;
+            padding-right: 6px !important;
+            width: 78px;
+        }
+        .col-tasa-angosta {
+            width: 44px;
+            padding-left: 2px !important;
+            padding-right: 2px !important;
+            text-align: center !important;
+            font-weight: 900;
+        }
+
+        /* Efecto Cebra (Una línea de color guía y otra limpia) */
+        .zebra-verde-par { background-color: #ffffff; }
+        .zebra-verde-impar { background-color: #dcfce7; }
+
+        .zebra-azul-par { background-color: #ffffff; }
+        .zebra-azul-impar { background-color: #dbeafe; }
+
+        .zebra-ambar-par { background-color: #ffffff; }
+        .zebra-ambar-impar { background-color: #fef3c7; }
+
+        .zebra-purpura-par { background-color: #ffffff; }
+        .zebra-purpura-impar { background-color: #f3e8ff; }
+
+        tbody tr.fila-datos {
+            cursor: pointer;
+        }
+        tbody tr.fila-datos:hover td:not(.col-monto-izq):not(.col-monto-der) {
+            background-color: #fde047 !important;
+            color: #000000 !important;
+        }
+
+        .borde-bloque-izq {
+            border-left: 2.5px solid #0f172a !important;
+        }
+        .linea-ancla td {
+            border-bottom: 2px solid #1e293b !important;
+        }
+
+        .celda-cuota {
+            font-weight: 900;
+            color: #0f172a;
+            letter-spacing: -0.2px;
+        }
+        .celda-total {
+            font-weight: 700;
+            color: #334155;
+            background-color: rgba(241, 245, 249, 0.55);
+            letter-spacing: -0.3px;
+        }
+
+        .celda-oficial {
+            background-color: #bbf7d0 !important;
+            color: #14532d !important;
+            font-weight: 900 !important;
+            border: 1.5px solid #15803d !important;
+        }
+        .badge-oficial {
+            background-color: #15803d;
+            color: white;
+            font-size: 8px;
+            padding: 0.5px 3px;
+            border-radius: 3px;
+            font-weight: 800;
+            margin-left: 2px;
+        }
+
+        @media print {
+            body {
+                background: white !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .a4-sheet {
+                width: 100% !important;
+                height: 201mm !important;
+                margin: 0 !important;
+                padding: 1mm 2mm !important;
+                box-shadow: none !important;
+                border-radius: 0 !important;
+                page-break-inside: avoid !important;
+            }
+            .salto-pagina {
+                page-break-after: always !important;
+                break-after: page !important;
+            }
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+        }
+    </style>
+</head>
+<body class="p-2 md:p-4">
+
+    <!-- ==================== PANEL DE CONTROL Y CONFIGURACIÓN DE TASAS (NO SE IMPRIME) ==================== -->
+    <div class="max-w-[288mm] mx-auto mb-5 bg-white p-5 rounded-2xl shadow-xl border border-gray-300 no-print">
+        <!-- Barra Superior -->
+        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-gray-200 pb-4 mb-4">
+            <div class="flex items-center gap-3">
+                <div class="w-11 h-12 flex-shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 240" class="w-full h-full">
+                        <g fill="#59B447">
+                            <rect x="90" y="8" width="24" height="13" rx="6.5"/>
+                            <rect x="71" y="31" width="61" height="13" rx="6.5"/>
+                            <rect x="50" y="55" width="74" height="13" rx="6.5"/>
+                            <rect x="31" y="79" width="75" height="13" rx="6.5"/>
+                            <rect x="24" y="103" width="63" height="13" rx="6.5"/>
+                            <rect x="37" y="128" width="24" height="13" rx="6.5"/>
+                            <path d="M143 55 C141 78 130 95 111 107 C96 117 81 122 72 134 C62 147 63 166 70 181 C76 195 87 208 97 216 C107 201 118 189 131 177 C144 166 157 156 164 141 C173 123 173 104 168 89 C164 74 156 62 143 55 Z"/>
+                        </g>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-xl font-black text-gray-900">Sistema Generador de Cartillas A4 con Motor Interno — CREDIBAN PERÚ</h1>
+                    <p class="text-xs text-gray-600">Haz clic en cualquier monto de la tabla para auditar su cronograma interno o abre el <strong>Configurador de Tasas</strong> para modificar porcentajes, tramos y plazos.</p>
+                </div>
+            </div>
+            <div class="flex flex-wrap gap-2">
+                <button type="button" onclick="togglePanelTasas()" id="btnToggleTasas" class="bg-slate-800 hover:bg-slate-900 text-white font-bold px-4 py-2.5 rounded-xl shadow flex items-center gap-2 text-xs transition-all cursor-pointer">
+                    ⚙️ Configurar Tasas, Tramos y Reglas
+                </button>
+                <button type="button" onclick="window.print()" class="bg-[#5da448] hover:bg-[#4b8a39] text-white font-black px-5 py-2.5 rounded-xl shadow-md flex items-center gap-2 text-sm transition-all cursor-pointer">
+                    🖨️ IMPRIMIR / GUARDAR PDF A4
+                </button>
+            </div>
+        </div>
+
+        <!-- Controles Rápidos de Impresión y Tamaño -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-3 mb-3">
+            <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                <label class="block text-[11px] font-extrabold text-slate-800 uppercase mb-1">1. Distribución de Hojas A4:</label>
+                <select id="modoDistribucion" onchange="guardarYRenderizar()" class="w-full px-2.5 py-1.5 border-2 border-slate-300 rounded-lg font-bold text-xs text-slate-900 bg-white">
+                    <option value="separado" selected>📄 1 Bloque por Hoja (Ocupa toda la Hoja A4)</option>
+                    <option value="combinado">📑 Catorcenal + Semanal juntos (Compacto)</option>
+                </select>
+            </div>
+
+            <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                <label class="block text-[11px] font-extrabold text-slate-800 uppercase mb-1">2. Tamaño de Números y Filas:</label>
+                <select id="tamanoLetra" onchange="guardarYRenderizar()" class="w-full px-2.5 py-1.5 border-2 border-slate-300 rounded-lg font-bold text-xs text-slate-900 bg-white">
+                    <option value="auto" selected>🔍 Automático Maximizado (Llena toda la Hoja)</option>
+                    <option value="escala-xl">🔠 Extra Grande (15px - Números Gigantes)</option>
+                    <option value="escala-lg">🔡 Grande Estándar (13.5px - Equilibrado)</option>
+                    <option value="escala-md">📏 Compacto (12px - Más aire en celdas)</option>
+                </select>
+            </div>
+
+            <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                <label class="block text-[11px] font-extrabold text-slate-800 uppercase mb-1">3. Columna de Total a Pagar:</label>
+                <select id="modoDetalle" onchange="guardarYRenderizar()" class="w-full px-2.5 py-1.5 border-2 border-slate-300 rounded-lg font-bold text-xs text-slate-900 bg-white">
+                    <option value="cuota_y_total" selected>💰 Mostrar CUOTA + TOTAL A PAGAR</option>
+                    <option value="solo_cuota">🔢 Mostrar SOLO CUOTA (Columnas extra anchas)</option>
+                </select>
+            </div>
+
+            <div class="bg-green-50/90 p-3 rounded-xl border border-green-300">
+                <label class="block text-[11px] font-extrabold text-green-950 uppercase mb-1">4. Hojas Activas para Imprimir:</label>
+                <div class="grid grid-cols-2 gap-1 text-xs font-bold text-gray-800">
+                    <label class="flex items-center gap-1.5 cursor-pointer bg-white px-2 py-1 rounded border border-green-300">
+                        <input type="checkbox" id="chkCatorcenal" checked onchange="guardarYRenderizar()" class="w-3.5 h-3.5 accent-[#5da448]">
+                        <span>📅 Catorcenal</span>
+                    </label>
+                    <label class="flex items-center gap-1.5 cursor-pointer bg-white px-2 py-1 rounded border border-blue-300">
+                        <input type="checkbox" id="chkSemanal" checked onchange="guardarYRenderizar()" class="w-3.5 h-3.5 accent-blue-600">
+                        <span>🗓️ Semanal</span>
+                    </label>
+                    <label class="flex items-center gap-1.5 cursor-pointer bg-white px-2 py-1 rounded border border-amber-300">
+                        <input type="checkbox" id="chkDiario" checked onchange="guardarYRenderizar()" class="w-3.5 h-3.5 accent-amber-600">
+                        <span>☀️ Diario</span>
+                    </label>
+                    <label class="flex items-center gap-1.5 cursor-pointer bg-white px-2 py-1 rounded border border-purple-300">
+                        <input type="checkbox" id="chkComparativa" checked onchange="guardarYRenderizar()" class="w-3.5 h-3.5 accent-purple-600">
+                        <span>⚖️ Comparativa</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== SECCIÓN DESPLEGABLE: CONFIGURADOR DE TASAS, PLAZOS, MONTOS Y ANOTACIONES ==================== -->
+        <div id="panelConfigTasas" class="hidden mt-4 pt-4 border-t-2 border-slate-200 bg-slate-50 p-4 rounded-xl">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-3 gap-2">
+                <div>
+                    <h3 class="text-sm font-black text-slate-900 uppercase">⚙️ Configuración Maestra de Tasas (% TEM), Plazos, Montos y Reglas Especiales</h3>
+                    <p class="text-xs text-slate-600">Modifica cualquier tasa, tramo o número de cuotas. El motor interno recalculará todas las hojas automáticamente.</p>
+                </div>
+                <button type="button" onclick="restaurarConfigPorDefecto()" class="bg-red-100 hover:bg-red-200 text-red-800 font-bold px-3 py-1.5 rounded-lg text-xs border border-red-300 transition-colors">
+                    🔄 Restaurar Tasas Oficiales CREDIBAN
+                </button>
+            </div>
+
+            <!-- SUB-BLOQUE A: CUOTAS Y LISTA DE MONTOS -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-3 mb-4 text-xs bg-white p-3 rounded-lg border border-slate-200">
+                <div>
+                    <label class="font-bold text-green-900 block mb-1">📅 Cuotas Catorcenales (Frec. 14d):</label>
+                    <input type="text" id="inputCuotasCat" value="4, 6, 8" oninput="guardarYRenderizar()" class="w-full px-2.5 py-1.5 border rounded font-mono font-bold text-gray-900" />
+                </div>
+                <div>
+                    <label class="font-bold text-blue-900 block mb-1">🗓️ Cuotas Semanales (Frec. 7d):</label>
+                    <input type="text" id="inputCuotasSem" value="4, 6, 8" oninput="guardarYRenderizar()" class="w-full px-2.5 py-1.5 border rounded font-mono font-bold text-gray-900" />
+                </div>
+                <div>
+                    <label class="font-bold text-amber-900 block mb-1">☀️ Cuotas Diarias (Frec. 1d):</label>
+                    <input type="text" id="inputCuotasDia" value="21, 25, 30, 35, 40" oninput="guardarYRenderizar()" class="w-full px-2.5 py-1.5 border rounded font-mono font-bold text-gray-900" />
+                </div>
+                <div>
+                    <label class="font-bold text-slate-800 block mb-1">⏳ Días de Gracia en Cartilla:</label>
+                    <div class="flex items-center gap-2">
+                        <input type="number" id="inputDiasGracia" value="0" oninput="guardarYRenderizar()" class="w-20 px-2.5 py-1.5 border rounded font-mono font-bold text-gray-900" />
+                        <label class="flex items-center gap-1 text-xs font-semibold text-gray-700 cursor-pointer">
+                            <input type="checkbox" id="chkGraciaNeg" onchange="guardarYRenderizar()" class="w-3.5 h-3.5"> Negativo
+                        </label>
+                    </div>
+                </div>
+                <div class="md:col-span-4">
+                    <label class="font-bold text-slate-800 block mb-1">💵 Lista de Montos de la Cartilla (S/) — Separados por coma:</label>
+                    <input type="text" id="inputListaMontos" value="300, 400, 500, 600, 700, 800, 900, 1000, 1200, 1500, 1800, 2000, 2500, 3000, 3500, 4000, 5000, 6000, 7000, 8000, 9000, 10000" oninput="guardarYRenderizar()" class="w-full px-2.5 py-1.5 border rounded font-mono font-bold text-gray-900 text-xs" />
+                </div>
+            </div>
+
+            <!-- SUB-BLOQUE B: MATRIZ DE TASAS POR TRAMOS DE MONTO -->
+            <div class="bg-white p-3 rounded-lg border border-slate-200 mb-4 overflow-x-auto">
+                <h4 class="text-xs font-black text-slate-800 uppercase mb-2">📊 Matriz Principal de Tasas (% TEM) por Tramo de Monto y Modalidad</h4>
+                <table class="w-full text-xs border-collapse">
+                    <thead>
+                        <tr class="bg-slate-800 text-white">
+                            <th class="p-2 text-left">Tramo de Monto (S/)</th>
+                            <th class="p-2 text-center bg-green-900">¿Aplica Catorcenal?</th>
+                            <th class="p-2 text-center bg-green-800">Catorcenal Plazo Corto/Medio<br><span class="text-[10px] font-normal">(Menos de <input type="number" id="corteCuotasCat" value="8" oninput="guardarYRenderizar()" class="w-10 text-center text-black font-bold rounded px-0.5"> cuotas)</span></th>
+                            <th class="p-2 text-center bg-green-700">Catorcenal Plazo Largo<br><span class="text-[10px] font-normal">(Desde 8 cuotas a más)</span></th>
+                            <th class="p-2 text-center bg-blue-800">Tasa Semanal<br><span class="text-[10px] font-normal">(% TEM)</span></th>
+                            <th class="p-2 text-center bg-amber-800">Tasa Diaria<br><span class="text-[10px] font-normal">(% TEM)</span></th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200 font-semibold">
+                        <!-- Tramo 1 -->
+                        <tr class="bg-amber-50/40">
+                            <td class="p-2">
+                                <strong>Tramo 1:</strong> De S/ <input type="number" id="t1_min" value="300" oninput="guardarYRenderizar()" class="w-16 px-1 py-0.5 border rounded font-mono">
+                                a S/ <input type="number" id="t1_max" value="400" oninput="guardarYRenderizar()" class="w-16 px-1 py-0.5 border rounded font-mono">
+                            </td>
+                            <td class="p-2 text-center">
+                                <input type="checkbox" id="t1_cat_activo" onchange="guardarYRenderizar()" class="w-4 h-4 accent-green-600">
+                                <span class="text-[11px] text-gray-500 ml-1">Habilitar</span>
+                            </td>
+                            <td class="p-2 text-center">
+                                <input type="number" step="0.1" id="t1_cat_corto" value="23" oninput="guardarYRenderizar()" class="w-16 px-1.5 py-1 border rounded text-center font-mono font-bold"> %
+                            </td>
+                            <td class="p-2 text-center">
+                                <input type="number" step="0.1" id="t1_cat_largo" value="23" oninput="guardarYRenderizar()" class="w-16 px-1.5 py-1 border rounded text-center font-mono font-bold"> %
+                            </td>
+                            <td class="p-2 text-center">
+                                <input type="number" step="0.1" id="t1_sem" value="35" oninput="guardarYRenderizar()" class="w-16 px-1.5 py-1 border rounded text-center font-mono font-bold text-blue-900 bg-blue-50"> %
+                            </td>
+                            <td class="p-2 text-center">
+                                <input type="number" step="0.1" id="t1_dia" value="35" oninput="guardarYRenderizar()" class="w-16 px-1.5 py-1 border rounded text-center font-mono font-bold text-amber-900 bg-amber-50"> %
+                            </td>
+                        </tr>
+                        <!-- Tramo 2 -->
+                        <tr class="bg-emerald-50/40">
+                            <td class="p-2">
+                                <strong>Tramo 2:</strong> De S/ <input type="number" id="t2_min" value="500" oninput="guardarYRenderizar()" class="w-16 px-1 py-0.5 border rounded font-mono">
+                                a S/ <input type="number" id="t2_max" value="900" oninput="guardarYRenderizar()" class="w-16 px-1 py-0.5 border rounded font-mono">
+                            </td>
+                            <td class="p-2 text-center">
+                                <input type="checkbox" id="t2_cat_activo" checked onchange="guardarYRenderizar()" class="w-4 h-4 accent-green-600">
+                                <span class="text-[11px] text-green-800 ml-1">Activo</span>
+                            </td>
+                            <td class="p-2 text-center">
+                                <input type="number" step="0.1" id="t2_cat_corto" value="23" oninput="guardarYRenderizar()" class="w-16 px-1.5 py-1 border rounded text-center font-mono font-bold text-green-900 bg-green-50"> %
+                            </td>
+                            <td class="p-2 text-center">
+                                <input type="number" step="0.1" id="t2_cat_largo" value="23" oninput="guardarYRenderizar()" class="w-16 px-1.5 py-1 border rounded text-center font-mono font-bold text-green-900 bg-green-50"> %
+                            </td>
+                            <td class="p-2 text-center">
+                                <input type="number" step="0.1" id="t2_sem" value="23" oninput="guardarYRenderizar()" class="w-16 px-1.5 py-1 border rounded text-center font-mono font-bold text-blue-900 bg-blue-50"> %
+                            </td>
+                            <td class="p-2 text-center">
+                                <input type="number" step="0.1" id="t2_dia" value="35" oninput="guardarYRenderizar()" class="w-16 px-1.5 py-1 border rounded text-center font-mono font-bold text-amber-900 bg-amber-50"> %
+                            </td>
+                        </tr>
+                        <!-- Tramo 3 -->
+                        <tr class="bg-green-50/60">
+                            <td class="p-2">
+                                <strong>Tramo 3:</strong> De S/ <input type="number" id="t3_min" value="1000" oninput="guardarYRenderizar()" class="w-16 px-1 py-0.5 border rounded font-mono">
+                                a S/ <input type="number" id="t3_max" value="100000" oninput="guardarYRenderizar()" class="w-20 px-1 py-0.5 border rounded font-mono">
+                            </td>
+                            <td class="p-2 text-center">
+                                <input type="checkbox" id="t3_cat_activo" checked onchange="guardarYRenderizar()" class="w-4 h-4 accent-green-600">
+                                <span class="text-[11px] text-green-800 ml-1">Activo</span>
+                            </td>
+                            <td class="p-2 text-center">
+                                <input type="number" step="0.1" id="t3_cat_corto" value="21" oninput="guardarYRenderizar()" class="w-16 px-1.5 py-1 border rounded text-center font-mono font-bold text-green-900 bg-green-100"> %
+                            </td>
+                            <td class="p-2 text-center">
+                                <input type="number" step="0.1" id="t3_cat_largo" value="18" oninput="guardarYRenderizar()" class="w-16 px-1.5 py-1 border rounded text-center font-mono font-bold text-emerald-900 bg-emerald-100"> %
+                            </td>
+                            <td class="p-2 text-center">
+                                <input type="number" step="0.1" id="t3_sem" value="23" oninput="guardarYRenderizar()" class="w-16 px-1.5 py-1 border rounded text-center font-mono font-bold text-blue-900 bg-blue-50"> %
+                            </td>
+                            <td class="p-2 text-center">
+                                <input type="number" step="0.1" id="t3_dia" value="35" oninput="guardarYRenderizar()" class="w-16 px-1.5 py-1 border rounded text-center font-mono font-bold text-amber-900 bg-amber-50"> %
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- SUB-BLOQUE C: ANOTACIONES / REGLAS ESPECÍFICAS POR PLAZO Y MONTO -->
+            <div class="bg-white p-3 rounded-lg border border-slate-200">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 mb-2">
+                    <div>
+                        <h4 class="text-xs font-black text-purple-900 uppercase">📌 Anotaciones y Reglas Especiales por Plazo / Monto</h4>
+                        <p class="text-[11px] text-gray-500">¿Deseas que un plazo o monto específico tenga una tasa distinta a la matriz general? Agrégalo aquí y tendrá prioridad.</p>
+                    </div>
+                    <button type="button" onclick="agregarReglaEspecial()" class="bg-purple-700 hover:bg-purple-800 text-white font-bold px-3 py-1.5 rounded text-xs flex items-center gap-1">
+                        ➕ Añadir Regla / Anotación de Tasa
+                    </button>
+                </div>
+                <div id="contenedorReglasEspeciales" class="space-y-2 text-xs">
+                    <!-- Generado por JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL DE AUDITORÍA DEL MOTOR INTERNO (AL HACER CLIC EN UNA FILA/CELDA) ==================== -->
+    <div id="modalAuditoria" class="fixed inset-0 bg-black/70 hidden items-center justify-center z-50 p-4 no-print">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full overflow-hidden border border-gray-300">
+            <div class="bg-slate-900 text-white px-5 py-3.5 flex justify-between items-center">
+                <div>
+                    <span class="text-[10px] bg-[#5da448] text-white font-black px-2 py-0.5 rounded uppercase">Motor Financiero Interno CREDIBAN</span>
+                    <h3 class="text-base font-black mt-0.5" id="tituloModalAuditoria">Detalle de Simulación</h3>
+                </div>
+                <button type="button" onclick="cerrarModalAuditoria()" class="text-gray-300 hover:text-white text-xl font-bold px-2">✕</button>
+            </div>
+            <div class="p-5 space-y-4 text-xs">
+                <div class="grid grid-cols-4 gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200 text-center">
+                    <div>
+                        <span class="text-gray-500 block">Capital Desembolsado</span>
+                        <strong class="text-base text-slate-900 font-black" id="audCapital">S/ 0.00</strong>
+                    </div>
+                    <div>
+                        <span class="text-gray-500 block">Tasa TEM / Periodo</span>
+                        <strong class="text-base text-[#5da448] font-black" id="audTasa">0%</strong>
+                    </div>
+                    <div>
+                        <span class="text-gray-500 block">Cuota Fija Redondeada</span>
+                        <strong class="text-base text-blue-800 font-black" id="audCuota">S/ 0.00</strong>
+                    </div>
+                    <div>
+                        <span class="text-gray-500 block">Total a Pagar Exacto</span>
+                        <strong class="text-base text-emerald-800 font-black" id="audTotal">S/ 0.00</strong>
+                    </div>
+                </div>
+                <div class="max-h-72 overflow-y-auto border border-gray-200 rounded-lg">
+                    <table class="w-full text-right border-collapse font-mono text-xs">
+                        <thead class="bg-gray-100 text-gray-800 font-bold sticky top-0">
+                            <tr>
+                                <th class="p-2 text-center"># Cuota</th>
+                                <th class="p-2">Capital</th>
+                                <th class="p-2">Interés</th>
+                                <th class="p-2">Cuota Fija</th>
+                                <th class="p-2">Saldo Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbodyAuditoria" class="divide-y divide-gray-200"></tbody>
+                        <tfoot class="bg-pink-100 font-bold text-slate-900 border-t-2 border-slate-800">
+                            <tr>
+                                <td class="p-2 text-center">TOTALES</td>
+                                <td class="p-2" id="audSumCap">0.00</td>
+                                <td class="p-2" id="audSumInt">0.00</td>
+                                <td class="p-2 text-blue-900" id="audSumCuota">0.00</td>
+                                <td class="p-2"></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== CONTENEDOR DE HOJAS A4 IMPRIMIBLES ==================== -->
+    <div id="contenedor-hojas"></div>
+
+    <script>
+        const STORAGE_KEY_CARTILLA = 'crediban_config_cartilla_v3';
+
+        let reglasEspeciales = [];
+
+        const LOGO_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 240" class="w-full h-full"><g fill="#59B447"><rect x="90" y="8" width="24" height="13" rx="6.5"/><rect x="71" y="31" width="61" height="13" rx="6.5"/><rect x="50" y="55" width="74" height="13" rx="6.5"/><rect x="31" y="79" width="75" height="13" rx="6.5"/><rect x="24" y="103" width="63" height="13" rx="6.5"/><rect x="37" y="128" width="24" height="13" rx="6.5"/><path d="M143 55 C141 78 130 95 111 107 C96 117 81 122 72 134 C62 147 63 166 70 181 C76 195 87 208 97 216 C107 201 118 189 131 177 C144 166 157 156 164 141 C173 123 173 104 168 89 C164 74 156 62 143 55 Z"/></g></svg>';
+
+        function togglePanelTasas() {
+            const p = document.getElementById('panelConfigTasas');
+            p.classList.toggle('hidden');
+        }
+
+        // ==================== MOTOR DE CÁLCULO INTERNO 100% IDÉNTICO AL SIMULADOR PRINCIPAL ====================
+        function calcularMotorCredibanInterno(monto, cuotas, frecuencia, tasaPorcentaje, diasGraciaInput, graciaNegativoInput) {
+            const m = parseFloat(monto) || 0;
+            const n = parseInt(cuotas) || 0;
+            const frec = parseInt(frecuencia) || 0;
+            const tasaTEM = (parseFloat(tasaPorcentaje) || 0) / 100;
+            let diasGracia = parseInt(diasGraciaInput) || 0;
+            if (graciaNegativoInput) diasGracia = -Math.abs(diasGracia);
+
+            if (m <= 0 || n <= 0 || frec <= 0) {
+                return { cuotaFija: 0, totalPagar: 0, totalCapital: 0, totalInteres: 0, tasaPeriodoPct: 0, cronograma: [] };
+            }
+
+            const factorGracia = Math.pow(1 + tasaTEM, diasGracia / 30);
+            const r = Math.pow(1 + tasaTEM, frec / 30) - 1;
+            let cuotaRaw = 0;
+
+            if (r === 0) {
+                cuotaRaw = (m * factorGracia) / n;
+            } else {
+                cuotaRaw = (m * factorGracia * r) / (1 - Math.pow(1 + r, -n));
+            }
+
+            // Redondeo hacia arriba al múltiplo de S/ 0.10 (con protección de precisión flotante)
+            const cuotaFija = Math.ceil((cuotaRaw - 1e-9) * 10) / 10;
+
+            let saldoCapital = m;
+            let saldoTotalAPagar = Math.round((cuotaFija * n) * 100) / 100;
+            let totalCapital = 0;
+            let totalInteres = 0;
+            let totalCuota = 0;
+            const cronograma = [];
+
+            for (let i = 1; i <= n; i++) {
+                let r_periodo = (i === 1) ? (Math.pow(1 + tasaTEM, (frec + diasGracia) / 30) - 1) : r;
+                let interes = saldoCapital * r_periodo;
+                let interesRedondeado = Math.round(interes * 100) / 100;
+                let capital = 0;
+
+                if (i === n) {
+                    capital = saldoCapital;
+                    interesRedondeado = Math.round((cuotaFija - capital) * 100) / 100;
+                } else {
+                    capital = Math.round((cuotaFija - interesRedondeado) * 100) / 100;
+                }
+
+                saldoCapital = Math.round((saldoCapital - capital) * 100) / 100;
+                if (saldoCapital < 0.01) saldoCapital = 0;
+
+                saldoTotalAPagar = Math.round((saldoTotalAPagar - cuotaFija) * 100) / 100;
+                if (saldoTotalAPagar < 0.01 || i === n) saldoTotalAPagar = 0;
+
+                totalCapital = Math.round((totalCapital + capital) * 100) / 100;
+                totalInteres = Math.round((totalInteres + interesRedondeado) * 100) / 100;
+                totalCuota = Math.round((totalCuota + cuotaFija) * 100) / 100;
+
+                cronograma.push({
+                    nro: i,
+                    capital: capital,
+                    interes: interesRedondeado,
+                    cuota: cuotaFija,
+                    saldoTotal: saldoTotalAPagar
+                });
+            }
+
+            return {
+                cuotaFija: cuotaFija,
+                totalPagar: totalCuota,
+                totalCapital: totalCapital,
+                totalInteres: totalInteres,
+                tasaPeriodoPct: r * 100,
+                cronograma: cronograma
+            };
+        }
+
+        // ==================== LECTOR DE TASAS SEGÚN LA CONFIGURACIÓN Y ANOTACIONES ====================
+        function obtenerTasaConfigurada(monto, frecuencia, cuotas) {
+            // 1. Verificar primero si existe una Regla / Anotación Especial para este cruce
+            for (let i = 0; i < reglasEspeciales.length; i++) {
+                const reg = reglasEspeciales[i];
+                if (!reg.activa) continue;
+                const coincideFrec = (parseInt(reg.frecuencia) === frecuencia);
+                const coincideMonto = (monto >= parseFloat(reg.montoMin) && monto <= parseFloat(reg.montoMax));
+                const coincideCuota = (reg.cuotas === 'todas' || reg.cuotas === '' || parseInt(reg.cuotas) === cuotas);
+                if (coincideFrec && coincideMonto && coincideCuota) {
+                    return parseFloat(reg.tasa);
+                }
+            }
+
+            // 2. Si no hay regla especial, aplicar la Matriz Principal por Tramos
+            const corteCat = parseInt(document.getElementById('corteCuotasCat').value) || 8;
+
+            const t1Min = parseFloat(document.getElementById('t1_min').value) || 0;
+            const t1Max = parseFloat(document.getElementById('t1_max').value) || 400;
+
+            const t2Min = parseFloat(document.getElementById('t2_min').value) || 500;
+            const t2Max = parseFloat(document.getElementById('t2_max').value) || 900;
+
+            // Determinar en qué tramo cae el monto
+            let numTramo = 3;
+            if (monto >= t1Min && monto <= t1Max) {
+                numTramo = 1;
+            } else if (monto >= t2Min && monto <= t2Max) {
+                numTramo = 2;
+            }
+
+            const pref = 't' + numTramo + '_';
+
+            if (frecuencia === 1) {
+                return parseFloat(document.getElementById(pref + 'dia').value) || 35;
+            }
+            if (frecuencia === 7) {
+                return parseFloat(document.getElementById(pref + 'sem').value) || 23;
+            }
+            if (frecuencia === 14) {
+                const activo = document.getElementById(pref + 'cat_activo').checked;
+                if (!activo) return null;
+                if (cuotas >= corteCat) {
+                    return parseFloat(document.getElementById(pref + 'cat_largo').value) || 18;
+                } else {
+                    return parseFloat(document.getElementById(pref + 'cat_corto').value) || 21;
+                }
+            }
+            return 23;
+        }
+
+        // ==================== GESTIÓN DE ANOTACIONES / REGLAS ESPECIALES ====================
+        function renderizarReglasEspeciales() {
+            const cont = document.getElementById('contenedorReglasEspeciales');
+            if (reglasEspeciales.length === 0) {
+                cont.innerHTML = '<div class="text-gray-400 italic py-1">No hay reglas especiales adicionales. Se está aplicando la Matriz Principal por Tramos.</div>';
+                return;
+            }
+            let html = '';
+            for (let i = 0; i < reglasEspeciales.length; i++) {
+                const r = reglasEspeciales[i];
+                html += '<div class="flex flex-wrap items-center gap-2 bg-purple-50/70 p-2 rounded border border-purple-200">' +
+                    '<input type="checkbox" ' + (r.activa ? 'checked' : '') + ' onchange="actualizarRegla(' + i + ', \'activa\', this.checked)" class="w-4 h-4 accent-purple-700">' +
+                    '<span class="font-bold text-purple-950">Modalidad:</span>' +
+                    '<select onchange="actualizarRegla(' + i + ', \'frecuencia\', this.value)" class="px-2 py-1 border rounded bg-white font-bold">' +
+                        '<option value="14" ' + (r.frecuencia == 14 ? 'selected' : '') + '>Catorcenal (14d)</option>' +
+                        '<option value="7" ' + (r.frecuencia == 7 ? 'selected' : '') + '>Semanal (7d)</option>' +
+                        '<option value="1" ' + (r.frecuencia == 1 ? 'selected' : '') + '>Diario (1d)</option>' +
+                    '</select>' +
+                    '<span>Monto De S/</span>' +
+                    '<input type="number" value="' + r.montoMin + '" oninput="actualizarRegla(' + i + ', \'montoMin\', this.value)" class="w-20 px-1.5 py-1 border rounded font-mono font-bold bg-white">' +
+                    '<span>a S/</span>' +
+                    '<input type="number" value="' + r.montoMax + '" oninput="actualizarRegla(' + i + ', \'montoMax\', this.value)" class="w-20 px-1.5 py-1 border rounded font-mono font-bold bg-white">' +
+                    '<span>N° Cuotas:</span>' +
+                    '<input type="text" placeholder="Todas o N°" value="' + r.cuotas + '" oninput="actualizarRegla(' + i + ', \'cuotas\', this.value)" class="w-20 px-1.5 py-1 border rounded font-mono font-bold bg-white text-center" title="Escribe un número de cuotas (ej. 6) o déjalo en blanco para todas">' +
+                    '<span>Aplicar Tasa TEM:</span>' +
+                    '<input type="number" step="0.1" value="' + r.tasa + '" oninput="actualizarRegla(' + i + ', \'tasa\', this.value)" class="w-16 px-1.5 py-1 border rounded font-mono font-bold bg-yellow-50 text-purple-900 text-center"> %' +
+                    '<input type="text" placeholder="Nota / Motivo (opcional)" value="' + (r.nota || '') + '" oninput="actualizarRegla(' + i + ', \'nota\', this.value)" class="flex-1 min-w-[140px] px-2 py-1 border rounded bg-white">' +
+                    '<button type="button" onclick="eliminarReglaEspecial(' + i + ')" class="bg-red-100 hover:bg-red-200 text-red-700 font-bold px-2 py-1 rounded">🗑️</button>' +
+                '</div>';
+            }
+            cont.innerHTML = html;
+        }
+
+        function agregarReglaEspecial() {
+            reglasEspeciales.push({
+                activa: true,
+                frecuencia: 14,
+                montoMin: 1000,
+                montoMax: 10000,
+                cuotas: '8',
+                tasa: 18,
+                nota: 'Campaña Especial'
+            });
+            renderizarReglasEspeciales();
+            guardarYRenderizar();
+        }
+
+        function actualizarRegla(idx, campo, valor) {
+            if (!reglasEspeciales[idx]) return;
+            reglasEspeciales[idx][campo] = valor;
+            guardarYRenderizar();
+        }
+
+        function eliminarReglaEspecial(idx) {
+            reglasEspeciales.splice(idx, 1);
+            renderizarReglasEspeciales();
+            guardarYRenderizar();
+        }
+
+        // ==================== AUDITORÍA EMERGENTE AL HACER CLIC EN CUALQUIER CELDA ====================
+        function abrirAuditoria(monto, cuotas, frecuencia, tasa) {
+            if (!tasa || tasa <= 0) return;
+            const diasGracia = parseInt(document.getElementById('inputDiasGracia').value) || 0;
+            const graciaNeg = document.getElementById('chkGraciaNeg').checked;
+            const res = calcularMotorCredibanInterno(monto, cuotas, frecuencia, tasa, diasGracia, graciaNeg);
+
+            const nombreFrec = frecuencia === 1 ? 'Diario (Cada 1 día)' : (frecuencia === 7 ? 'Semanal (Cada 7 días)' : 'Catorcenal (Cada 14 días)');
+            document.getElementById('tituloModalAuditoria').innerText = 'Monto S/ ' + fmt(monto) + '  •  ' + cuotas + ' Cuotas  •  ' + nombreFrec;
+            document.getElementById('audCapital').innerText = 'S/ ' + fmt(monto);
+            document.getElementById('audTasa').innerText = tasa + '% TEM (' + res.tasaPeriodoPct.toFixed(2) + '% per.)';
+            document.getElementById('audCuota').innerText = 'S/ ' + fmt(res.cuotaFija);
+            document.getElementById('audTotal').innerText = 'S/ ' + fmt(res.totalPagar);
+
+            let filas = '';
+            for (let i = 0; i < res.cronograma.length; i++) {
+                const c = res.cronograma[i];
+                filas += '<tr class="hover:bg-blue-50">' +
+                    '<td class="p-1.5 text-center font-bold bg-gray-50">' + c.nro + '</td>' +
+                    '<td class="p-1.5">S/ ' + fmt(c.capital) + '</td>' +
+                    '<td class="p-1.5">S/ ' + fmt(c.interes) + '</td>' +
+                    '<td class="p-1.5 font-bold text-blue-900">S/ ' + fmt(c.cuota) + '</td>' +
+                    '<td class="p-1.5 text-gray-500">S/ ' + fmt(c.saldoTotal) + '</td>' +
+                '</tr>';
+            }
+            document.getElementById('tbodyAuditoria').innerHTML = filas;
+            document.getElementById('audSumCap').innerText = 'S/ ' + fmt(res.totalCapital);
+            document.getElementById('audSumInt').innerText = 'S/ ' + fmt(res.totalInteres);
+            document.getElementById('audSumCuota').innerText = 'S/ ' + fmt(res.totalPagar);
+
+            const modal = document.getElementById('modalAuditoria');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function cerrarModalAuditoria() {
+            const modal = document.getElementById('modalAuditoria');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        // ==================== UTILIDADES DE FORMATO ====================
+        function fmt(num) {
+            const n = parseFloat(num) || 0;
+            return n.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        function parsearListaNumeros(idInput, def) {
+            const val = document.getElementById(idInput).value;
+            const arr = val.split(',').map(function(x) { return parseInt(x.trim()); }).filter(function(x) { return !isNaN(x) && x > 0; });
+            return arr.length > 0 ? arr : def;
+        }
+
+        function crearCabeceraHoja(titulo, subtitulo, colorBarra, badgeDerecha, numPag, totalPag) {
+            return '<div class="flex items-center justify-between border-b-2 ' + colorBarra + ' pb-1 mb-1 flex-shrink-0">' +
+                '<div class="flex items-center gap-2">' +
+                    '<div class="w-7 h-8 flex-shrink-0">' + LOGO_SVG + '</div>' +
+                    '<div>' +
+                        '<h2 class="text-sm font-black text-gray-900 tracking-tight leading-none">' + titulo + '</h2>' +
+                        '<p class="text-[10px] text-gray-700 font-bold mt-0.5">' + subtitulo + '</p>' +
+                    '</div>' +
+                '</div>' +
+                '<div class="flex items-center gap-1.5">' +
+                    badgeDerecha +
+                    '<span class="bg-gray-900 text-white text-[9.5px] font-black px-2 py-0.5 rounded">HOJA ' + numPag + ' / ' + totalPag + '</span>' +
+                '</div>' +
+            '</div>';
+        }
+
+        function crearPieHoja(notaIzquierda) {
+            return '<div class="flex justify-between items-center text-[9px] text-gray-600 pt-1 border-t border-gray-300 mt-1 flex-shrink-0">' +
+                '<span><strong>Guía Visual:</strong> Sigue la fila de color de izquierda a derecha. El monto figura en ambos extremos.</span>' +
+                '<span>' + notaIzquierda + '</span>' +
+                '<span class="font-black text-[#5da448]">CREDIBAN PERÚ — empieza a construir tus sueños</span>' +
+            '</div>';
+        }
+
+        // ==================== 1. CONSTRUCTOR TABLA CATORCENAL (SIN PLANTILLAS ANIDADAS) ====================
+        function generarTablaCatorcenal(montos, cuotasCat, mostrarTotal, diasGracia, graciaNeg) {
+            const colsPorCuota = mostrarTotal ? 3 : 2;
+            const totalCols = 2 + (cuotasCat.length * colsPorCuota);
+
+            const t1Max = parseFloat(document.getElementById('t1_max').value) || 400;
+            const t2Min = parseFloat(document.getElementById('t2_min').value) || 500;
+            const t2Max = parseFloat(document.getElementById('t2_max').value) || 900;
+            const t3Min = parseFloat(document.getElementById('t3_min').value) || 1000;
+            const t2Cat = document.getElementById('t2_cat_corto').value;
+            const t3Corto = document.getElementById('t3_cat_corto').value;
+            const t3Largo = document.getElementById('t3_cat_largo').value;
+            const corteCat = parseInt(document.getElementById('corteCuotasCat').value) || 8;
+
+            let html = '<table class="tabla-cartilla"><thead>' +
+                '<tr class="bg-[#15803d] text-white">' +
+                '<th rowspan="2" class="bg-slate-900 text-left px-2">MONTO<br><span class="text-[8.5px] font-normal text-gray-300">Capital (S/)</span></th>';
+
+            for (let j = 0; j < cuotasCat.length; j++) {
+                const c = cuotasCat[j];
+                const meses = (c % 2 === 0) ? ((c / 2) + ' Mes' + ((c / 2) > 1 ? 'es' : '')) : ((c * 14) + ' Días');
+                html += '<th colspan="' + colsPorCuota + '" class="borde-bloque-izq text-center">' + c + ' CUOTAS CATORCENALES (' + meses + ')</th>';
+            }
+
+            html += '<th rowspan="2" class="bg-slate-900 text-right px-2">MONTO<br><span class="text-[8.5px] font-normal text-gray-300">Guía (S/)</span></th></tr>' +
+                '<tr class="bg-green-950 text-white">';
+
+            for (let j = 0; j < cuotasCat.length; j++) {
+                const c = cuotasCat[j];
+                html += '<th class="borde-bloque-izq bg-green-900 text-yellow-200 col-tasa-angosta">Tasa</th>' +
+                        '<th class="bg-green-700 text-white">CUOTA (' + c + ' Ctas)</th>';
+                if (mostrarTotal) {
+                    html += '<th class="bg-green-950 text-green-200">Total a Pagar (' + c + 'c)</th>';
+                }
+            }
+            html += '</tr></thead><tbody>';
+
+            let zebra = 0;
+            for (let i = 0; i < montos.length; i++) {
+                const m = montos[i];
+
+                if (i === 0 && m <= t1Max) {
+                    const t1Activo = document.getElementById('t1_cat_activo').checked;
+                    const msgT1 = t1Activo ? ('Aplicando tasa configurada para Tramo 1') : ('No aplica Catorcenal (Ofrecer Semanal o Diario al ' + document.getElementById('t1_sem').value + '% TEM)');
+                    html += '<tr class="tramo-banner bg-slate-200 text-slate-800 font-black"><td colspan="' + totalCols + '" class="text-left">🔒 TRAMO S/ ' + m + ' A S/ ' + t1Max + ': ' + msgT1 + '</td></tr>';
+                    zebra = 0;
+                } else if (m === t2Min) {
+                    html += '<tr class="tramo-banner bg-emerald-200 text-emerald-950 font-black border-y border-emerald-800"><td colspan="' + totalCols + '" class="text-left">🟢 TRAMO S/ ' + t2Min + ' A S/ ' + t2Max + ': Todos los plazos catorcenales aplican Tasa ' + t2Cat + '% TEM</td></tr>';
+                    zebra = 0;
+                } else if (m === t3Min) {
+                    html += '<tr class="tramo-banner bg-green-300 text-green-950 font-black border-y border-green-900"><td colspan="' + totalCols + '" class="text-left">⭐ TRAMO DESDE S/ ' + t3Min.toLocaleString('es-PE') + ': Menos de ' + corteCat + ' cuotas aplica ' + t3Corto + '% TEM  |  Desde ' + corteCat + ' cuotas baja a ' + t3Largo + '% TEM</td></tr>';
+                    zebra = 0;
+                }
+
+                const claseZebra = (zebra % 2 === 1) ? 'zebra-verde-impar' : 'zebra-verde-par';
+                const claseAncla = (m === 1000 || m === 2000 || m === 5000) ? 'linea-ancla' : '';
+                zebra++;
+
+                html += '<tr class="fila-datos ' + claseZebra + ' ' + claseAncla + '">';
+                html += '<td class="col-monto-izq">S/ ' + m.toLocaleString('es-PE') + '</td>';
+
+                for (let j = 0; j < cuotasCat.length; j++) {
+                    const c = cuotasCat[j];
+                    const tasa = obtenerTasaConfigurada(m, 14, c);
+                    if (tasa === null || tasa <= 0) {
+                        html += '<td class="borde-bloque-izq col-tasa-angosta text-gray-400">—</td>' +
+                                '<td class="text-center text-gray-400 font-normal">No aplica</td>';
+                        if (mostrarTotal) {
+                            html += '<td class="text-center text-gray-400">—</td>';
+                        }
+                    } else {
+                        const calc = calcularMotorCredibanInterno(m, c, 14, tasa, diasGracia, graciaNeg);
+                        html += '<td onclick="abrirAuditoria(' + m + ',' + c + ',14,' + tasa + ')" class="borde-bloque-izq col-tasa-angosta ' + (tasa <= 18 ? 'text-emerald-900' : 'text-green-900') + '">' + tasa + '%</td>' +
+                                '<td onclick="abrirAuditoria(' + m + ',' + c + ',14,' + tasa + ')" class="text-right celda-cuota">S/ ' + fmt(calc.cuotaFija) + '</td>';
+                        if (mostrarTotal) {
+                            html += '<td onclick="abrirAuditoria(' + m + ',' + c + ',14,' + tasa + ')" class="text-right celda-total">S/ ' + fmt(calc.totalPagar) + '</td>';
+                        }
+                    }
+                }
+
+                html += '<td class="col-monto-der">S/ ' + m.toLocaleString('es-PE') + '</td></tr>';
+            }
+
+            html += '</tbody></table>';
+            return html;
+        }
+
+        // ==================== 2. CONSTRUCTOR TABLA SEMANAL (MÁX. 8 CUOTAS + TOTALES) ====================
+        function generarTablaSemanal(montos, cuotasSem, mostrarTotal, diasGracia, graciaNeg) {
+            const colsPorCuota = mostrarTotal ? 2 : 1;
+            const totalCols = 3 + (cuotasSem.length * colsPorCuota);
+
+            const t1Max = parseFloat(document.getElementById('t1_max').value) || 400;
+            const t2Min = parseFloat(document.getElementById('t2_min').value) || 500;
+            const t1Sem = document.getElementById('t1_sem').value;
+            const t2Sem = document.getElementById('t2_sem').value;
+
+            let html = '<table class="tabla-cartilla"><thead>' +
+                '<tr class="bg-[#1d4ed8] text-white">' +
+                '<th rowspan="2" class="bg-slate-900 text-left px-2">MONTO<br><span class="text-[8.5px] font-normal text-gray-300">Capital (S/)</span></th>' +
+                '<th rowspan="2" class="bg-blue-950 text-yellow-200 col-tasa-angosta">TASA<br>TEM</th>';
+
+            for (let j = 0; j < cuotasSem.length; j++) {
+                const c = cuotasSem[j];
+                html += '<th colspan="' + colsPorCuota + '" class="borde-bloque-izq text-center">PLAN EN ' + c + ' CUOTAS SEMANALES</th>';
+            }
+
+            html += '<th rowspan="2" class="bg-slate-900 text-right px-2">MONTO<br><span class="text-[8.5px] font-normal text-gray-300">Guía (S/)</span></th></tr>' +
+                '<tr class="bg-blue-950 text-white">';
+
+            for (let j = 0; j < cuotasSem.length; j++) {
+                const c = cuotasSem[j];
+                html += '<th class="borde-bloque-izq bg-blue-700 text-white">CUOTA (' + c + ' Sem.)</th>';
+                if (mostrarTotal) {
+                    html += '<th class="bg-blue-950 text-blue-200">Total a Pagar (' + c + 's)</th>';
+                }
+            }
+            html += '</tr></thead><tbody>';
+
+            let zebra = 0;
+            for (let i = 0; i < montos.length; i++) {
+                const m = montos[i];
+
+                if (i === 0 && m <= t1Max) {
+                    html += '<tr class="tramo-banner bg-amber-200 text-amber-950 font-black border-b border-amber-700"><td colspan="' + totalCols + '" class="text-left">🟠 TRAMO S/ ' + m + ' A S/ ' + t1Max + ': Créditos Semanales aplican Tasa ' + t1Sem + '% TEM</td></tr>';
+                    zebra = 0;
+                } else if (m === t2Min) {
+                    html += '<tr class="tramo-banner bg-blue-200 text-blue-950 font-black border-y border-blue-800"><td colspan="' + totalCols + '" class="text-left">🔵 TRAMO DESDE S/ ' + t2Min + ' EN ADELANTE: Créditos Semanales aplican Tasa ' + t2Sem + '% TEM</td></tr>';
+                    zebra = 0;
+                }
+
+                const tasaBase = obtenerTasaConfigurada(m, 7, cuotasSem[0] || 4);
+                const claseZebra = (zebra % 2 === 1) ? 'zebra-azul-impar' : 'zebra-azul-par';
+                const claseAncla = (m === 1000 || m === 2000 || m === 5000) ? 'linea-ancla' : '';
+                zebra++;
+
+                html += '<tr class="fila-datos ' + claseZebra + ' ' + claseAncla + '">';
+                html += '<td class="col-monto-izq">S/ ' + m.toLocaleString('es-PE') + '</td>';
+                html += '<td class="col-tasa-angosta ' + (tasaBase >= 30 ? 'text-amber-900' : 'text-blue-900') + '">' + tasaBase + '%</td>';
+
+                for (let j = 0; j < cuotasSem.length; j++) {
+                    const c = cuotasSem[j];
+                    const tasa = obtenerTasaConfigurada(m, 7, c);
+                    const calc = calcularMotorCredibanInterno(m, c, 7, tasa, diasGracia, graciaNeg);
+                    html += '<td onclick="abrirAuditoria(' + m + ',' + c + ',7,' + tasa + ')" class="borde-bloque-izq text-right celda-cuota">S/ ' + fmt(calc.cuotaFija) + '</td>';
+                    if (mostrarTotal) {
+                        html += '<td onclick="abrirAuditoria(' + m + ',' + c + ',7,' + tasa + ')" class="text-right celda-total">S/ ' + fmt(calc.totalPagar) + '</td>';
+                    }
+                }
+
+                html += '<td class="col-monto-der">S/ ' + m.toLocaleString('es-PE') + '</td></tr>';
+            }
+
+            html += '</tbody></table>';
+            return html;
+        }
+
+        // ==================== 3. CONSTRUCTOR TABLA DIARIA (21, 25, 30, 35, 40 CUOTAS + TOTALES) ====================
+        function generarTablaDiaria(montos, cuotasDia, mostrarTotal, diasGracia, graciaNeg) {
+            const colsPorCuota = mostrarTotal ? 2 : 1;
+            const totalCols = 3 + (cuotasDia.length * colsPorCuota);
+            const tasaGeneralDia = document.getElementById('t1_dia').value;
+
+            let html = '<table class="tabla-cartilla"><thead>' +
+                '<tr class="bg-[#b45309] text-white">' +
+                '<th rowspan="2" class="bg-slate-900 text-left px-2">MONTO<br><span class="text-[8.5px] font-normal text-gray-300">Capital (S/)</span></th>' +
+                '<th rowspan="2" class="bg-amber-950 text-yellow-200 col-tasa-angosta">TASA<br>TEM</th>';
+
+            for (let j = 0; j < cuotasDia.length; j++) {
+                const c = cuotasDia[j];
+                html += '<th colspan="' + colsPorCuota + '" class="borde-bloque-izq text-center">' + c + ' CUOTAS DIARIAS</th>';
+            }
+
+            html += '<th rowspan="2" class="bg-slate-900 text-right px-2">MONTO<br><span class="text-[8.5px] font-normal text-gray-300">Guía (S/)</span></th></tr>' +
+                '<tr class="bg-amber-950 text-white">';
+
+            for (let j = 0; j < cuotasDia.length; j++) {
+                const c = cuotasDia[j];
+                html += '<th class="borde-bloque-izq bg-amber-700 text-white">CUOTA (' + c + 'd)</th>';
+                if (mostrarTotal) {
+                    html += '<th class="bg-amber-950 text-amber-200">Total (' + c + 'd)</th>';
+                }
+            }
+            html += '</tr></thead><tbody>';
+
+            html += '<tr class="tramo-banner bg-amber-200 text-amber-950 font-black border-b border-amber-700"><td colspan="' + totalCols + '" class="text-left">☀️ MODALIDAD PAGO DIARIO (' + cuotasDia.join(', ') + ' CUOTAS): Cálculo directo por motor financiero interno (' + tasaGeneralDia + '% TEM base)</td></tr>';
+
+            for (let i = 0; i < montos.length; i++) {
+                const m = montos[i];
+                const tasaBase = obtenerTasaConfigurada(m, 1, cuotasDia[0] || 21);
+                const claseZebra = (i % 2 === 1) ? 'zebra-ambar-impar' : 'zebra-ambar-par';
+                const claseAncla = (m === 400 || m === 900 || m === 2000 || m === 5000) ? 'linea-ancla' : '';
+
+                html += '<tr class="fila-datos ' + claseZebra + ' ' + claseAncla + '">';
+                html += '<td class="col-monto-izq">S/ ' + m.toLocaleString('es-PE') + '</td>';
+                html += '<td class="col-tasa-angosta text-amber-950">' + tasaBase + '%</td>';
+
+                for (let j = 0; j < cuotasDia.length; j++) {
+                    const c = cuotasDia[j];
+                    const tasa = obtenerTasaConfigurada(m, 1, c);
+                    const calc = calcularMotorCredibanInterno(m, c, 1, tasa, diasGracia, graciaNeg);
+                    html += '<td onclick="abrirAuditoria(' + m + ',' + c + ',1,' + tasa + ')" class="borde-bloque-izq text-right celda-cuota">S/ ' + fmt(calc.cuotaFija) + '</td>';
+                    if (mostrarTotal) {
+                        html += '<td onclick="abrirAuditoria(' + m + ',' + c + ',1,' + tasa + ')" class="text-right celda-total">S/ ' + fmt(calc.totalPagar) + '</td>';
+                    }
+                }
+
+                html += '<td class="col-monto-der">S/ ' + m.toLocaleString('es-PE') + '</td></tr>';
+            }
+
+            html += '</tbody></table>';
+            return html;
+        }
+
+        // ==================== 4. CONSTRUCTOR TABLA COMPARATIVA MULTI-TASA ====================
+        function generarTablaComparativaFacil(montos, diasGracia, graciaNeg) {
+            const t2Cat = parseFloat(document.getElementById('t2_cat_corto').value) || 23;
+            const t3Corto = parseFloat(document.getElementById('t3_cat_corto').value) || 21;
+            const t3Largo = parseFloat(document.getElementById('t3_cat_largo').value) || 18;
+            const t1Sem = parseFloat(document.getElementById('t1_sem').value) || 35;
+            const t2Sem = parseFloat(document.getElementById('t2_sem').value) || 23;
+
+            let html = '<table class="tabla-cartilla"><thead>' +
+                '<tr class="bg-slate-900 text-white">' +
+                    '<th rowspan="2" class="text-left px-2">MONTO<br><span class="text-[8.5px] font-normal text-gray-300">Capital (S/)</span></th>' +
+                    '<th colspan="3" class="bg-emerald-800 borde-bloque-izq">CATORCENAL — 4 CUOTAS (2 Meses)</th>' +
+                    '<th colspan="3" class="bg-teal-800 borde-bloque-izq">CATORCENAL — 6 CUOTAS (3 Meses)</th>' +
+                    '<th colspan="3" class="bg-cyan-900 borde-bloque-izq">CATORCENAL — 8 CUOTAS (4 Meses)</th>' +
+                    '<th colspan="2" class="bg-blue-900 borde-bloque-izq">SEMANAL — 4 CUOTAS</th>' +
+                    '<th colspan="2" class="bg-indigo-900 borde-bloque-izq">SEMANAL — 8 CUOTAS</th>' +
+                    '<th rowspan="2" class="bg-slate-900 text-right px-2">MONTO<br><span class="text-[8.5px] font-normal text-gray-300">Guía (S/)</span></th>' +
+                '</tr>' +
+                '<tr class="bg-slate-200 text-slate-900">' +
+                    '<th class="borde-bloque-izq">' + t2Cat + '% (500-900)</th><th>' + t3Corto + '% (1000+)</th><th>' + t3Largo + '% (Esp.)</th>' +
+                    '<th class="borde-bloque-izq">' + t2Cat + '% (500-900)</th><th>' + t3Corto + '% (1000+)</th><th>' + t3Largo + '% (Esp.)</th>' +
+                    '<th class="borde-bloque-izq">' + t2Cat + '% (500-900)</th><th>' + t3Corto + '% (Alt.)</th><th>' + t3Largo + '% (1000+)</th>' +
+                    '<th class="borde-bloque-izq">' + t1Sem + '% (300-400)</th><th>' + t2Sem + '% (500+)</th>' +
+                    '<th class="borde-bloque-izq">' + t1Sem + '% (300-400)</th><th>' + t2Sem + '% (500+)</th>' +
+                '</tr></thead><tbody>';
+
+            let zebra = 0;
+            for (let i = 0; i < montos.length; i++) {
+                const m = montos[i];
+                if (m === 500) {
+                    html += '<tr class="tramo-banner bg-emerald-200 text-emerald-950 font-black"><td colspan="15" class="text-left">▼ TRAMO S/ 500 A S/ 900: La cuota oficial (★) se resalta en verde (' + t2Cat + '% TEM)</td></tr>';
+                    zebra = 0;
+                } else if (m === 1000) {
+                    html += '<tr class="tramo-banner bg-green-300 text-green-950 font-black"><td colspan="15" class="text-left">▼ TRAMO DESDE S/ 1,000: Cuota oficial (★) Catorcenal es ' + t3Corto + '% (en 4 y 6 cuotas) y ' + t3Largo + '% (en 8 cuotas)</td></tr>';
+                    zebra = 0;
+                }
+
+                const tOfCat4 = obtenerTasaConfigurada(m, 14, 4);
+                const tOfCat6 = obtenerTasaConfigurada(m, 14, 6);
+                const tOfCat8 = obtenerTasaConfigurada(m, 14, 8);
+                const tOfSem4 = obtenerTasaConfigurada(m, 7, 4);
+
+                const claseZebra = (zebra % 2 === 1) ? 'zebra-purpura-impar' : 'zebra-purpura-par';
+                const claseAncla = (m === 2000 || m === 5000) ? 'linea-ancla' : '';
+                zebra++;
+
+                html += '<tr class="fila-datos ' + claseZebra + ' ' + claseAncla + '">';
+                html += '<td class="col-monto-izq">S/ ' + m.toLocaleString('es-PE') + '</td>';
+
+                // 4 Catorcenas
+                const tasasCat = [t2Cat, t3Corto, t3Largo];
+                for (let k = 0; k < 3; k++) {
+                    const t = tasasCat[k];
+                    const esOf = (tOfCat4 === t);
+                    const c4 = calcularMotorCredibanInterno(m, 4, 14, t, diasGracia, graciaNeg).cuotaFija;
+                    html += '<td onclick="abrirAuditoria(' + m + ',4,14,' + t + ')" class="' + (k === 0 ? 'borde-bloque-izq ' : '') + 'text-right ' + (esOf ? 'celda-oficial' : 'text-slate-600') + '">' + fmt(c4) + (esOf ? '<span class="badge-oficial">★</span>' : '') + '</td>';
+                }
+
+                // 6 Catorcenas
+                for (let k = 0; k < 3; k++) {
+                    const t = tasasCat[k];
+                    const esOf = (tOfCat6 === t);
+                    const c6 = calcularMotorCredibanInterno(m, 6, 14, t, diasGracia, graciaNeg).cuotaFija;
+                    html += '<td onclick="abrirAuditoria(' + m + ',6,14,' + t + ')" class="' + (k === 0 ? 'borde-bloque-izq ' : '') + 'text-right ' + (esOf ? 'celda-oficial' : 'text-slate-600') + '">' + fmt(c6) + (esOf ? '<span class="badge-oficial">★</span>' : '') + '</td>';
+                }
+
+                // 8 Catorcenas
+                for (let k = 0; k < 3; k++) {
+                    const t = tasasCat[k];
+                    const esOf = (tOfCat8 === t);
+                    const c8 = calcularMotorCredibanInterno(m, 8, 14, t, diasGracia, graciaNeg).cuotaFija;
+                    html += '<td onclick="abrirAuditoria(' + m + ',8,14,' + t + ')" class="' + (k === 0 ? 'borde-bloque-izq ' : '') + 'text-right ' + (esOf ? 'celda-oficial' : 'text-slate-600') + '">' + fmt(c8) + (esOf ? '<span class="badge-oficial">★</span>' : '') + '</td>';
+                }
+
+                // 4 Semanas y 8 Semanas
+                const tasasSem = [t1Sem, t2Sem];
+                for (let k = 0; k < 2; k++) {
+                    const t = tasasSem[k];
+                    const esOf = (tOfSem4 === t);
+                    const cs4 = calcularMotorCredibanInterno(m, 4, 7, t, diasGracia, graciaNeg).cuotaFija;
+                    html += '<td onclick="abrirAuditoria(' + m + ',4,7,' + t + ')" class="' + (k === 0 ? 'borde-bloque-izq ' : '') + 'text-right ' + (esOf ? 'celda-oficial' : 'text-slate-500') + '">' + fmt(cs4) + (esOf ? '<span class="badge-oficial">★</span>' : '') + '</td>';
+                }
+                for (let k = 0; k < 2; k++) {
+                    const t = tasasSem[k];
+                    const esOf = (tOfSem4 === t);
+                    const cs8 = calcularMotorCredibanInterno(m, 8, 7, t, diasGracia, graciaNeg).cuotaFija;
+                    html += '<td onclick="abrirAuditoria(' + m + ',8,7,' + t + ')" class="' + (k === 0 ? 'borde-bloque-izq ' : '') + 'text-right ' + (esOf ? 'celda-oficial' : 'text-slate-500') + '">' + fmt(cs8) + (esOf ? '<span class="badge-oficial">★</span>' : '') + '</td>';
+                }
+
+                html += '<td class="col-monto-der">S/ ' + m.toLocaleString('es-PE') + '</td></tr>';
+            }
+
+            html += '</tbody></table>';
+            return html;
+        }
+
+        // ==================== 5. CONSTRUCTOR TABLA COMBINADA COMPACTA ====================
+        function generarTablaCombinadaCatSem(montos, cuotasCat, cuotasSem, mostrarTotal, diasGracia, graciaNeg) {
+            const colsPorItem = mostrarTotal ? 2 : 1;
+            const colsCat = cuotasCat.length * colsPorItem;
+            const colsSem = cuotasSem.length * colsPorItem;
+            const totalCols = 2 + colsCat + colsSem;
+
+            let html = '<table class="tabla-cartilla"><thead>' +
+                '<tr class="bg-slate-900 text-white">' +
+                    '<th rowspan="2" class="text-left px-2">MONTO (S/)</th>' +
+                    '<th colspan="' + colsCat + '" class="bg-[#15803d] borde-bloque-izq">MODALIDAD CATORCENAL (CADA 14 DÍAS)</th>' +
+                    '<th colspan="' + colsSem + '" class="bg-[#1d4ed8] borde-bloque-izq">MODALIDAD SEMANAL (CADA 7 DÍAS)</th>' +
+                    '<th rowspan="2" class="text-right px-2">MONTO (S/)</th>' +
+                '</tr><tr class="bg-slate-100 text-slate-900">';
+
+            for (let j = 0; j < cuotasCat.length; j++) {
+                const c = cuotasCat[j];
+                html += '<th class="borde-bloque-izq bg-green-100 text-green-950">Cuota ' + c + ' Cat.</th>';
+                if (mostrarTotal) html += '<th class="bg-green-50 text-gray-600">Total ' + c + 'c</th>';
+            }
+            for (let j = 0; j < cuotasSem.length; j++) {
+                const c = cuotasSem[j];
+                html += '<th class="borde-bloque-izq bg-blue-100 text-blue-950">Cuota ' + c + ' Sem.</th>';
+                if (mostrarTotal) html += '<th class="bg-blue-50 text-gray-600">Total ' + c + 's</th>';
+            }
+            html += '</tr></thead><tbody>';
+
+            let zebra = 0;
+            for (let i = 0; i < montos.length; i++) {
+                const m = montos[i];
+                if (m === 300) {
+                    html += '<tr class="tramo-banner bg-amber-200 text-amber-950 font-black"><td colspan="' + totalCols + '" class="text-left">▼ S/ 300 A S/ 400: Semanal al ' + document.getElementById('t1_sem').value + '% TEM</td></tr>';
+                    zebra = 0;
+                } else if (m === 500) {
+                    html += '<tr class="tramo-banner bg-emerald-200 text-emerald-950 font-black"><td colspan="' + totalCols + '" class="text-left">▼ S/ 500 A S/ 900: Catorcenal al ' + document.getElementById('t2_cat_corto').value + '% TEM  |  Semanal al ' + document.getElementById('t2_sem').value + '% TEM</td></tr>';
+                    zebra = 0;
+                } else if (m === 1000) {
+                    html += '<tr class="tramo-banner bg-green-300 text-green-950 font-black"><td colspan="' + totalCols + '" class="text-left">▼ DESDE S/ 1,000: Catorcenal 4-6 ctas (' + document.getElementById('t3_cat_corto').value + '%) • 8 ctas (' + document.getElementById('t3_cat_largo').value + '%)  |  Semanal (' + document.getElementById('t3_sem').value + '%)</td></tr>';
+                    zebra = 0;
+                }
+
+                const claseZebra = (zebra % 2 === 1) ? 'zebra-verde-impar' : 'zebra-verde-par';
+                zebra++;
+
+                html += '<tr class="fila-datos ' + claseZebra + '">';
+                html += '<td class="col-monto-izq">S/ ' + m.toLocaleString('es-PE') + '</td>';
+
+                for (let j = 0; j < cuotasCat.length; j++) {
+                    const c = cuotasCat[j];
+                    const tCat = obtenerTasaConfigurada(m, 14, c);
+                    if (tCat === null || tCat <= 0) {
+                        html += '<td class="borde-bloque-izq text-center text-gray-400">—</td>';
+                        if (mostrarTotal) html += '<td class="text-center text-gray-400">—</td>';
+                    } else {
+                        const calc = calcularMotorCredibanInterno(m, c, 14, tCat, diasGracia, graciaNeg);
+                        html += '<td onclick="abrirAuditoria(' + m + ',' + c + ',14,' + tCat + ')" class="borde-bloque-izq text-right celda-cuota">' + fmt(calc.cuotaFija) + '</td>';
+                        if (mostrarTotal) html += '<td onclick="abrirAuditoria(' + m + ',' + c + ',14,' + tCat + ')" class="text-right celda-total">' + fmt(calc.totalPagar) + '</td>';
+                    }
+                }
+
+                for (let j = 0; j < cuotasSem.length; j++) {
+                    const c = cuotasSem[j];
+                    const tSem = obtenerTasaConfigurada(m, 7, c);
+                    const calc = calcularMotorCredibanInterno(m, c, 7, tSem, diasGracia, graciaNeg);
+                    html += '<td onclick="abrirAuditoria(' + m + ',' + c + ',7,' + tSem + ')" class="borde-bloque-izq text-right celda-cuota">' + fmt(calc.cuotaFija) + '</td>';
+                    if (mostrarTotal) html += '<td onclick="abrirAuditoria(' + m + ',' + c + ',7,' + tSem + ')" class="text-right celda-total">' + fmt(calc.totalPagar) + '</td>';
+                }
+
+                html += '<td class="col-monto-der">S/ ' + m.toLocaleString('es-PE') + '</td></tr>';
+            }
+
+            html += '</tbody></table>';
+            return html;
+        }
+
+        // ==================== GUARDADO LOCAL Y RENDERIZADO PRINCIPAL ====================
+        function guardarConfigLocal() {
+            const ids = [
+                'modoDistribucion', 'tamanoLetra', 'modoDetalle',
+                'inputCuotasCat', 'inputCuotasSem', 'inputCuotasDia', 'inputDiasGracia', 'inputListaMontos',
+                'corteCuotasCat', 't1_min', 't1_max', 't1_cat_corto', 't1_cat_largo', 't1_sem', 't1_dia',
+                't2_min', 't2_max', 't2_cat_corto', 't2_cat_largo', 't2_sem', 't2_dia',
+                't3_min', 't3_max', 't3_cat_corto', 't3_cat_largo', 't3_sem', 't3_dia'
+            ];
+            const chks = ['chkCatorcenal', 'chkSemanal', 'chkDiario', 'chkComparativa', 'chkGraciaNeg', 't1_cat_activo', 't2_cat_activo', 't3_cat_activo'];
+
+            const obj = { inputs: {}, checks: {}, reglas: reglasEspeciales };
+            for (let i = 0; i < ids.length; i++) {
+                const el = document.getElementById(ids[i]);
+                if (el) obj.inputs[ids[i]] = el.value;
+            }
+            for (let i = 0; i < chks.length; i++) {
+                const el = document.getElementById(chks[i]);
+                if (el) obj.checks[chks[i]] = el.checked;
+            }
+            localStorage.setItem(STORAGE_KEY_CARTILLA, JSON.stringify(obj));
+        }
+
+        function cargarConfigLocal() {
+            const raw = localStorage.getItem(STORAGE_KEY_CARTILLA);
+            if (!raw) return;
+            try {
+                const obj = JSON.parse(raw);
+                if (obj.inputs) {
+                    for (let k in obj.inputs) {
+                        if (document.getElementById(k)) document.getElementById(k).value = obj.inputs[k];
+                    }
+                }
+                if (obj.checks) {
+                    for (let k in obj.checks) {
+                        if (document.getElementById(k)) document.getElementById(k).checked = obj.checks[k];
+                    }
+                }
+                if (Array.isArray(obj.reglas)) {
+                    reglasEspeciales = obj.reglas;
+                }
+            } catch (e) {}
+        }
+
+        function restaurarConfigPorDefecto() {
+            if (!confirm('¿Restaurar todas las tasas, tramos y plazos a los valores oficiales de CREDIBAN?')) return;
+            localStorage.removeItem(STORAGE_KEY_CARTILLA);
+            window.location.reload();
+        }
+
+        function obtenerClaseEscala(escalaPreferidaUsuario, escalaOptimaHoja) {
+            if (escalaPreferidaUsuario === 'auto') return escalaOptimaHoja;
+            return escalaPreferidaUsuario;
+        }
+
+        function guardarYRenderizar() {
+            guardarConfigLocal();
+            renderizarTodo();
+        }
+
+        function renderizarTodo() {
+            const modoDist = document.getElementById('modoDistribucion').value;
+            const prefEscala = document.getElementById('tamanoLetra').value;
+            const mostrarTotal = document.getElementById('modoDetalle').value === 'cuota_y_total';
+
+            const incCat = document.getElementById('chkCatorcenal').checked;
+            const incSem = document.getElementById('chkSemanal').checked;
+            const incDia = document.getElementById('chkDiario').checked;
+            const incComp = document.getElementById('chkComparativa').checked;
+
+            const cuotasCat = parsearListaNumeros('inputCuotasCat', [4, 6, 8]);
+            const cuotasSem = parsearListaNumeros('inputCuotasSem', [4, 6, 8]);
+            const cuotasDia = parsearListaNumeros('inputCuotasDia', [21, 25, 30, 35, 40]);
+            const montos = parsearListaNumeros('inputListaMontos', [300, 400, 500, 600, 700, 800, 900, 1000, 1200, 1500, 1800, 2000, 2500, 3000, 3500, 4000, 5000, 6000, 7000, 8000, 9000, 10000]);
+
+            const diasGracia = parseInt(document.getElementById('inputDiasGracia').value) || 0;
+            const graciaNeg = document.getElementById('chkGraciaNeg').checked;
+
+            const t2Cat = document.getElementById('t2_cat_corto').value;
+            const t3Corto = document.getElementById('t3_cat_corto').value;
+            const t3Largo = document.getElementById('t3_cat_largo').value;
+            const t1Sem = document.getElementById('t1_sem').value;
+            const t2Sem = document.getElementById('t2_sem').value;
+            const t1Dia = document.getElementById('t1_dia').value;
+
+            const hojas = [];
+
+            if (modoDist === 'separado') {
+                if (incCat) {
+                    hojas.push({
+                        claseModo: obtenerClaseEscala(prefEscala, 'escala-xl'),
+                        titulo: 'CREDIBAN PERÚ — CARTILLA DE CRÉDITOS CATORCENALES (' + cuotasCat.join(', ') + ' CUOTAS)',
+                        subtitulo: 'DE S/ 500 A S/ 900: ' + t2Cat + '% TEM  |  DE S/ 1,000 A MÁS: 4 Y 6 CUOTAS AL ' + t3Corto + '% TEM • 8 CUOTAS AL ' + t3Largo + '% TEM',
+                        color: 'border-[#15803d]',
+                        badge: '<span class="bg-green-100 text-green-950 border border-green-500 text-[9.5px] font-black px-2 py-0.5 rounded">MODALIDAD CATORCENAL</span>',
+                        tabla: generarTablaCatorcenal(montos, cuotasCat, mostrarTotal, diasGracia, graciaNeg),
+                        pie: 'Motor interno: CEILING(Cuota, 0.10) y Total = Cuota Fija × N° Cuotas.'
+                    });
+                }
+                if (incSem) {
+                    hojas.push({
+                        claseModo: obtenerClaseEscala(prefEscala, 'escala-xl'),
+                        titulo: 'CREDIBAN PERÚ — CARTILLA DE CRÉDITOS SEMANALES (' + cuotasSem.join(', ') + ' CUOTAS)',
+                        subtitulo: 'DE S/ 300 A S/ 400: ' + t1Sem + '% TEM  |  DE S/ 500 A S/ 10,000: ' + t2Sem + '% TEM EN TODOS LOS PLAZOS SEMANALES',
+                        color: 'border-[#1d4ed8]',
+                        badge: '<span class="bg-blue-100 text-blue-950 border border-blue-500 text-[9.5px] font-black px-2 py-0.5 rounded">MODALIDAD SEMANAL</span>',
+                        tabla: generarTablaSemanal(montos, cuotasSem, mostrarTotal, diasGracia, graciaNeg),
+                        pie: 'Plazo máximo semanal: 8 cuotas (cada 7 días).'
+                    });
+                }
+                if (incDia) {
+                    const escalaOptimaDia = (cuotasDia.length >= 5 && mostrarTotal) ? 'escala-lg' : 'escala-xl';
+                    hojas.push({
+                        claseModo: obtenerClaseEscala(prefEscala, escalaOptimaDia),
+                        titulo: 'CREDIBAN PERÚ — CARTILLA DE CRÉDITOS DIARIOS (' + cuotasDia.join(', ') + ' CUOTAS)',
+                        subtitulo: 'TODOS LOS MONTOS DESDE S/ 300 HASTA S/ 10,000 APLICAN TASA COMPENSATORIA DEL ' + t1Dia + '% TEM',
+                        color: 'border-[#b45309]',
+                        badge: '<span class="bg-amber-100 text-amber-950 border border-amber-500 text-[9.5px] font-black px-2 py-0.5 rounded">MODALIDAD DIARIA</span>',
+                        tabla: generarTablaDiaria(montos, cuotasDia, mostrarTotal, diasGracia, graciaNeg),
+                        pie: 'Excluye sábados, domingos y feriados en calendario sin alterar el monto de la cuota.'
+                    });
+                }
+                if (incComp) {
+                    hojas.push({
+                        claseModo: obtenerClaseEscala(prefEscala, 'escala-md'),
+                        titulo: 'CREDIBAN PERÚ — GUÍA RÁPIDA DE COMPARACIÓN Y NEGOCIACIÓN DE TASAS',
+                        subtitulo: 'COMPARA LA CUOTA OFICIAL (★ VERDE) FRENTE A TASAS ALTERNATIVAS EN CATORCENAL Y SEMANAL',
+                        color: 'border-purple-800',
+                        badge: '<span class="bg-purple-100 text-purple-950 border border-purple-500 text-[9.5px] font-black px-2 py-0.5 rounded">COMPARATIVA MULTI-TASA</span>',
+                        tabla: generarTablaComparativaFacil(montos, diasGracia, graciaNeg),
+                        pie: 'Las celdas verdes (★) indican la cuota con la tasa oficial vigente según el tramo.'
+                    });
+                }
+            } else {
+                if (incCat || incSem) {
+                    hojas.push({
+                        claseModo: obtenerClaseEscala(prefEscala, 'escala-md'),
+                        titulo: 'CREDIBAN PERÚ — CARTILLA INTEGRADA: CATORCENAL Y SEMANAL (CON TOTALES)',
+                        subtitulo: 'CATORCENAL (' + cuotasCat.join(', ') + ' CUOTAS) + SEMANAL (' + cuotasSem.join(', ') + ' CUOTAS) CON TASA OFICIAL AUTOMÁTICA',
+                        color: 'border-[#15803d]',
+                        badge: '<span class="bg-green-100 text-green-950 border border-green-500 text-[9.5px] font-black px-2 py-0.5 rounded">CATORCENAL + SEMANAL</span>',
+                        tabla: generarTablaCombinadaCatSem(montos, cuotasCat, cuotasSem, mostrarTotal, diasGracia, graciaNeg),
+                        pie: 'Incluye Cuota y Total a Pagar por cada plazo.'
+                    });
+                }
+                if (incDia) {
+                    hojas.push({
+                        claseModo: obtenerClaseEscala(prefEscala, 'escala-lg'),
+                        titulo: 'CREDIBAN PERÚ — CARTILLA DE CRÉDITOS DIARIOS (' + cuotasDia.join(', ') + ' CUOTAS)',
+                        subtitulo: 'TODOS LOS MONTOS DESDE S/ 300 HASTA S/ 10,000 APLICAN TASA COMPENSATORIA DEL ' + t1Dia + '% TEM',
+                        color: 'border-[#b45309]',
+                        badge: '<span class="bg-amber-100 text-amber-950 border border-amber-500 text-[9.5px] font-black px-2 py-0.5 rounded">MODALIDAD DIARIA</span>',
+                        tabla: generarTablaDiaria(montos, cuotasDia, mostrarTotal, diasGracia, graciaNeg),
+                        pie: 'Excluye sábados, domingos y feriados en calendario.'
+                    });
+                }
+                if (incComp) {
+                    hojas.push({
+                        claseModo: obtenerClaseEscala(prefEscala, 'escala-md'),
+                        titulo: 'CREDIBAN PERÚ — GUÍA RÁPIDA DE COMPARACIÓN Y NEGOCIACIÓN DE TASAS',
+                        subtitulo: 'COMPARA LA CUOTA OFICIAL (★ VERDE) FRENTE A TASAS ALTERNATIVAS EN CATORCENAL Y SEMANAL',
+                        color: 'border-purple-800',
+                        badge: '<span class="bg-purple-100 text-purple-950 border border-purple-500 text-[9.5px] font-black px-2 py-0.5 rounded">COMPARATIVA MULTI-TASA</span>',
+                        tabla: generarTablaComparativaFacil(montos, diasGracia, graciaNeg),
+                        pie: 'Las celdas verdes (★) indican la cuota con la tasa oficial vigente según el tramo.'
+                    });
+                }
+            }
+
+            const cont = document.getElementById('contenedor-hojas');
+            if (hojas.length === 0) {
+                cont.innerHTML = '<div class="max-w-[288mm] mx-auto bg-white p-10 rounded-xl text-center font-bold text-gray-500">Marca al menos una hoja arriba para visualizar la cartilla.</div>';
+                return;
+            }
+
+            let htmlFinal = '';
+            for (let i = 0; i < hojas.length; i++) {
+                const h = hojas[i];
+                const salto = (i < hojas.length - 1) ? 'salto-pagina' : '';
+                htmlFinal += '<section class="a4-sheet ' + h.claseModo + ' ' + salto + '">' +
+                    crearCabeceraHoja(h.titulo, h.subtitulo, h.color, h.badge, i + 1, hojas.length) +
+                    '<div class="tabla-contenedor">' + h.tabla + '</div>' +
+                    crearPieHoja(h.pie) +
+                '</section>';
+            }
+            cont.innerHTML = htmlFinal;
+        }
+
+        window.onload = function() {
+            cargarConfigLocal();
+            renderizarReglasEspeciales();
+            renderizarTodo();
+        };
+    </script>
+</body>
+</html>
